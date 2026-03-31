@@ -68,8 +68,10 @@ app.use((req, res, next) => {
 
 import ProductosRouter from "./routes/productos.ts"
 import UsuariosRouter  from "./routes/usuarios.ts"
+import ApiRouter       from "./routes/api.ts"
 app.use('/', ProductosRouter)
 app.use('/', UsuariosRouter)
+app.use('/api', ApiRouter)
 
 app.listen(PORT, () => {
   logger.info(`Servidor en http://localhost:${PORT}`)
