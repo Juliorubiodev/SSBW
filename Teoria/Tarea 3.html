@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tarea 3</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/javascript.min.js"></script>
+
+<script>hljs.highlightAll();</script>
+<style>
+	pre {
+		background-color: #FEFEFE;
+	}
+	code {
+		padding: 0 0 0 0 !important;
+	}
+</style>
+</head>
+
+<body>
+<div class="container has-text-justified">
+	
+	<figure class="image">
+		<img  style="width: 90%; height: 18rem; margin-left: 3vw; margin-top: 0px;"
+		      src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*p6NKfjG_taXqbVpRlgP_bg.png" />
+	</figure>
+	<br />		
+	<div class="content is-medium">
+		<h3 class="">Tarea 3: Base de Datos con Object Relational Mapping</h3>
+		<p>
+			En esta tarea empezaremos a utilizar la BD <a href="https://www.prisma.io/dataguide/postgresql/benefits-of-postgresql">PostgreSQL</a>
+			usando un 
+			<a href="https://www.freecodecamp.org/news/what-is-an-orm-the-meaning-of-object-relational-mapping-database-tools/">ORM</a>: una capa 
+			de software encima de la BD que uniformiza su manejo, y con la que podríamos utilizar distintas DBMS en la fase de 
+			desarrollo y/o en la de producción sin cambiar el código. Además tienen herramientas para migraciones,
+			inspeccionar la BD, etc.
+			En cualquier caso siempre se podría usar directamente SQL si  fuera 
+			necesario para optimizar el rendimiento, o por cualquier otra razón.
+		</p>
+		
+		<h5 class="mt-6">Instalación de la BD</h5>
+		<p>Usaremos PostgreSQL en un contenedor 
+			<a href="https://www.docker.com/">docker</a>, con <a href="https://docs.docker.com/compose/">docker compose</a>. 
+			Usar  la IA para crear el archivo <b>docker-compose.yml</b>, con imagen <a href="https://forums.docker.com/t/differences-between-standard-docker-images-and-alpine-slim-versions/134973">alpine</a>,
+			y  los passwords con variables de entorno en un
+			archivo aparte <b>.env</b> por motivos de <a href="https://xygeni.io/es/blog/why-docker-compose-yml-is-a-security-risk-surface/"></a>seguridad.
+		  Poner en marcha la BD con <code>doker compose up</code>.
+		</p>
+
+		
+		<h5 class="mt-6">ORM</h5>
+		<p>
+			El manejo de la BD lo haremos con un el ORM <code class="has-text-weight-bold has-text-weight-medium is-size-5 px-1 has-background-danger-95">
+			<a href="https://medium.com/@fidelotieno11/prisma-101-a-beginners-guide-to-understand-prisma-7158bc45af2d" class="px-1">Prisma</a></code>.
+		
+			Seguimos mas o menos los pasos de la documentación  en <a href="https://www.prisma.io/docs/prisma-orm/quickstart/postgresql">
+			Quickstart</a>. Esto es porque Prisma ha pasado recientemente de la <a href="https://aysh.me/blogs/prisma-7">versión 6 a la 7</a>,
+			con <a href="https://github.com/prisma/prisma/issues/28845?timeline_page=1">algunos problemas todavía.</a>
+		</p>
+		<p>
+			De todos modos instalamos la última versión de prisma como en
+			<a href="https://medium.com/@faresahmednabih/getting-started-with-prisma-7-with-nodejs-postgresql-1bb4de3c8336">Getting Started with Prisma 7 with Nodejs & postgresql</a>
+			<pre><code class="language-bash">$ npm install -D prisma dotenv
+$ npm install @prisma/client @prisma/adapter-pg
+$ npx prisma init</code></pre>
+		</p>
+		<p>
+			Esta última orden modifica el archivo <b>.env</b> y crea una archivo  <b>prisma/schema.prisma</b>.
+			En el archivo .env ha puesto la conexión con una BD de desarrollo. En su lugar ponemos la conexión 
+			con nuestra BD en docker compose (<a href="https://www.prisma.io/docs/v6/orm/overview/databases/postgresql#connection-url">Connection URL</a>):
+	<pre><code class="language-bash">DATABASE_URL="postgresql://yo:una_clave_muy_segura_123@localhost:5432/ssbw?schema=public"</code></pre>
+		
+	</p>
+
+	<h5 class="mt-6">Esquema de la BD</h5>
+	<p>
+		Comprobando en <a href="https://www.prisma.io/docs/orm/prisma-schema/overview">Overview of Prisma Schema</a>, 
+		editamos el <b>prisma/schema.prisma</b>
+<pre><code class="language-javascript">generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+	
+datasource db {
+  provider = "postgresql"
+}
+	
+model Producto {
+  id          Int     @id @default(autoincrement())
+  título      String  @db.Char(127)
+  descripción String  @db.Text
+  precio      Decimal
+  imagen      String  @db.Char(127)
+}</code></pre>
+Donde hemos activado la opción de busqueda en textos indexados de postgres
+<a href="https://www.prisma.io/blog/wnip-q4-dsk0golh8v#full-text-search-is-now-in-preview-for-postgresql">Full-Text Search is now in preview for PostgreSQL</a>.
+	y puesto un modelo para la tabla de productos. Este modelo se encarga de validar los datos antes de que pasen a la BD, crear índices, mapear a 
+	tipos propios de la BD, etc.
+  </p>
+	<p>
+		A continuación creamos una  <a href="https://www.prisma.io/docs/orm/prisma-migrate"> migración</a> para crear la(s) tablas
+		<pre><code class="language-bash">$ npx prisma migrate dev --name esquema_inicial</code></pre>
+	</p>
+	<p>
+		y <a href="https://www.prisma.io/docs/cli/generate">generamos</a>  el cliente para esta migración 
+		<pre><code class="language-bash">$ npx prisma generate</code></pre>
+	</p>
+	<p>
+		y lo configuramos en <b>./prisma/prisma.client.ts</b>:
+<pre><code class="language-javascript">import 'dotenv/config';
+import { PrismaClient } from '../generated/prisma/client.ts'
+import { PrismaPg } from '@prisma/adapter-pg'
+			
+// 1. Setup the adapter
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+// 2. Initialize Prisma with the adapter
+const prisma = new PrismaClient({ adapter })
+			
+// 3. export global prisma api
+export default prisma	</code></pre>
+	</p>
+	<p>
+		Los datos de la DB los podemos ver y modificar con el cliente gráfico
+		<pre><code class="language-bash">$ npx prisma studio</code></pre>
+
+	</p>
+
+		<h5 class="mt-6">Script para poner los datos iniciales en la BD</h5>
+		<p>
+			Haremos un script <b>seed.ts</b> para poner los datos de <b>productos.json</b> en la BD.
+			<pre><code class="language-javascript">import prisma from "./prisma/prisma.client.ts";
+
+type Producto = {
+  título: string
+  descripción: string
+  texto_precio: string
+  imagen: string
+}
+type Productos = Producto[]
+
+import productos from "./productos.json" with {type: 'json'}
+await Guadar_en_DB(productos)
+
+// Hacer alguna consulta para comprobar como:
+// productos cuya descripción empieze por 'lámina' ordenados por precio
+// etc
+
+await prisma.$disconnect()
+
+// async porque dentro hay await
+async function Guadar_en_DB(productos: Productos): Promise&lt;void&gt; {
+
+  for (const producto of productos) {
+    const título = producto.título
+    const descripción = producto.descripción
+    const imagen = producto.imagen
+    const precio = Number(producto.texto_precio.slice(0, -2).replace(/,/, '.'))
+    //console.log(precio)
+    try {
+      const prod = await prisma.producto.create({
+        data:{
+          título,
+          descripción,
+          imagen,
+          precio
+        }
+      })
+      console.log('Creado', prod)
+    } catch(error:any) {
+      console.error(error.message)
+    }
+  } // end-for
+
+} // end-function</code></pre>		
+		</p>
+
+		<br />
+		
+		<h6>Referencias:</h6>
+		<ul>
+			<li>
+				<a href="https://medium.com/@faresahmednabih/getting-started-with-prisma-7-with-nodejs-postgresql-1bb4de3c8336">Getting Started with Prisma 7 with Nodejs & postgresql</a>
+			</li>
+			<li><a href="https://hevodata.com/learn/sqlite-vs-postgresql/">
+				SQLite vs PostgreSQL: 8 Critical Differences
+			</a></li>
+			<li>
+				<a href="https://medium.com/@destrex271/why-should-you-choose-postgres-as-your-first-database-17ece86988ab">
+					Why should you choose Postgres as your first Database?
+				</a>
+			</li>
+			<li><a href="https://medium.com/@fidelotieno11/prisma-101-a-beginners-guide-to-understand-prisma-7158bc45af2d">
+				PRISMA 101 : A beginner’s guide to understand prisma
+			</a></li>
+			<li>
+				<a href="https://www.prisma.io/docs/orm/prisma-schema/overview">Prisma Schema</a>
+			</li>
+			<li>
+				<a href="https://www.prisma.io/docs/orm/prisma-client/queries/crud">
+					Prisma Client CRUD
+				</a>
+			</li>
+			<li><a href="https://www.prisma.io/docs/orm/reference/prisma-schema-reference#postgresql">
+				Prisma postgres schema reference
+			</a></li>
+		</ul>
+		<br/><br/>
+	</div>
+</div>
+</body>
+</html>

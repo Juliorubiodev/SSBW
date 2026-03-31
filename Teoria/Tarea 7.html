@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tarea 7</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/twig.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/markdown.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+	pre {
+		background-color: #FEFEFE;
+	}
+	code {
+		padding: 0 0 0 0 !important;
+	}
+	h3, h4, h5 {
+		padding-bottom: 0.5rem;
+		padding-top: 1rem;
+		font-weight: 500 !important;
+	}
+</style>
+</head>
+
+<body>
+<div class="container has-text-justified">
+	
+	<figure class="image">
+		<img  style="width: 100%; height: 18rem; margin-left: 0vw; margin-top: -60px;padding-bottom: 0rem"
+		      src="https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/blogs/2147485434/images/315487-7af3-d17-c8af-0b4d8af188db_rest-api-model-diagram.png" />
+	</figure>
+	<br>
+	<div class="content is-medium">
+		<h3 class="">Tarea 7: API Resfull</h3>
+		<p>
+			En esta tarea haremos una <a href="https://www.arsys.es/blog/guia-completa-para-el-diseno-de-restful-api-conceptos-y-mejores-practicas">API Restful</a>
+			para la tabla de productos. Hablitaremos los siguientes <a href="https://blog.postman.com/what-is-an-api-endpoint/">endpoints</a>:
+<pre><code class="language-javascript">GET /api/productos          // todos los productos
+
+GET /api/productos/id       // producto con id
+	
+PUT /api/producto/id        // cambiar el titúlo/descripción/precio de un producto
+
+DELETE /api/productos/id    // eliminar un producto
+
+POST /api/productos         // añadir un producto</code></pre>			
+		</p>
+		<p>
+			Seguimos <a href="https://dev.to/dcodes/building-a-rest-api-with-prisma-and-expressjs-1oj">Building a REST API with Prisma and express.js</a>,
+			pero en la primera ruta (ver todos los productos) pondremos opciones para paginación y ordenación a traves de 
+			<a href="https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters#step-2-using-req-query-with-url-parameters">parámetros en el query</a>,
+			<p class="e"></p>
+<pre><code class="language-javascript">GET /api/productos?desde=1&hasta=20&ordenación=ascendente</code></pre>
+		</p>
+
+		<h5>Testing</h5>
+
+		<p>
+			Utillizaremos la extensión de VSCode <a href="https://marketplace.visualstudio.com/items?itemName=humao.rest-client">REST Client</a>
+			 para la comprobación y depuración del API.  Los endpoints los pondremos en un archivo test-api.http para utilizarlos desde REST Client:
+		<pre><code class="language-javascript">// test-api.http
+GET http://localhost:8000/api/productos
+			
+###   
+
+GET http://localhost:8000/api/producto/206...</code></pre>
+		</p>
+
+
+		<h6>Referencias:</h6>
+		<ul>
+			<li>
+				<a href="https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/">
+					Best practices for REST API design
+				</a>
+			</li>
+			<li>
+				<a href="https://www.skiplevel.co/blog/part-2-rest-api-components-how-to-read-them">
+					REST API Components & How to read them
+				</a>
+			</li>
+			<li>
+				<a href="https://www.youtube.com/watch?v=u2iHstOH4QU">
+					Como usar RESTClient en Visual Studio Code
+				</a>
+			</li>
+		</ul>
+		<br/><br/>
+	</div>
+</div>
+</body>
+</html>

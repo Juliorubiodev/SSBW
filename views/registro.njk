@@ -1,0 +1,64 @@
+{% extends "base.njk" %}
+
+{% block title %}Crear cuenta - Tienda Prado{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-container {
+    max-width: 420px;
+    margin: 40px auto;
+    padding: 40px;
+    border: 1px solid var(--prado-border);
+  }
+  .auth-title {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.3rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 30px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <h1 class="auth-title">Crear cuenta</h1>
+
+  {% if error %}
+  <div class="alert-prado alert-error">
+    <i class="bi bi-exclamation-circle"></i> {{ error }}
+  </div>
+  {% endif %}
+
+  {% if success %}
+  <div class="alert-prado alert-success">
+    <i class="bi bi-check-circle"></i> Cuenta creada correctamente. <a href="/login">Iniciar sesión</a>
+  </div>
+  {% endif %}
+
+  <form action="/registro" method="POST">
+    <div class="mb-3">
+      <input type="text" name="nombre" class="form-control prado-input"
+             placeholder="Nombre completo" required value="{{ nombre }}">
+    </div>
+    <div class="mb-3">
+      <input type="email" name="email" class="form-control prado-input"
+             placeholder="Correo electrónico" required value="{{ email }}">
+    </div>
+    <div class="mb-3">
+      <input type="password" name="password" class="form-control prado-input"
+             placeholder="Contraseña (mínimo 6 caracteres)" required minlength="6">
+    </div>
+    <div class="mb-3">
+      <input type="password" name="password_confirm" class="form-control prado-input"
+             placeholder="Confirmar contraseña" required minlength="6">
+    </div>
+    <button type="submit" class="btn btn-prado w-100">Crear cuenta</button>
+  </form>
+
+  <p class="text-center mt-3" style="font-size: 0.85rem;">
+    ¿Ya tienes cuenta? <a href="/login" class="text-dark">Iniciar sesión</a>
+  </p>
+</div>
+{% endblock %}

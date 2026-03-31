@@ -1,0 +1,26 @@
+node_modules/
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+# Logs
+logs/
+*.log
+info.log
+error.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code internals
+.claude/
+
+# Scraping artifacts
+cookies.txt
+imagenes/
+
+# Zips de teoría (opcionales, ya están los HTML)
+Teoria/*.zip
+Teoria/*.pdf

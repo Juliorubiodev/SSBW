@@ -1,0 +1,173 @@
+{% extends "base.njk" %}
+
+{% block title %}Finalizar pedido - Tienda Prado{% endblock %}
+
+{% block extra_css %}
+<style>
+  .checkout-section {
+    border: 1px solid var(--prado-border);
+    padding: 25px;
+    margin-bottom: 20px;
+  }
+  .checkout-section h5 {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--prado-border);
+  }
+  .order-summary {
+    background: var(--prado-light);
+    padding: 25px;
+  }
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--prado-border);
+  }
+  .order-item:last-child { border-bottom: none; }
+  .order-item-name { flex: 1; margin-right: 10px; }
+  .order-total {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding-top: 15px;
+    border-top: 2px solid var(--prado-dark);
+    margin-top: 10px;
+  }
+  .card-icons { display: flex; gap: 8px; margin-bottom: 15px; }
+  .card-icon {
+    width: 45px;
+    height: 28px;
+    border: 1px solid var(--prado-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: var(--prado-gray);
+  }
+  .success-order {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .success-order i { font-size: 4rem; color: #198754; margin-bottom: 20px; display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if confirmado %}
+  <div class="success-order">
+    <i class="bi bi-check-circle-fill"></i>
+    <h2 class="section-title" style="margin-bottom: 15px;">Pedido confirmado</h2>
+    <p style="color: var(--prado-gray); max-width: 400px; margin: 0 auto 20px;">
+      Gracias por tu compra. Recibirás un email de confirmación con los detalles de tu pedido.
+    </p>
+    <p style="font-size: 0.9rem;"><strong>N.º de pedido:</strong> #{{ orden }}</p>
+    <a href="/" class="btn btn-prado mt-3">Seguir comprando</a>
+  </div>
+{% else %}
+  <h1 class="section-title">Finalizar pedido</h1>
+
+  <form action="/checkout" method="POST">
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <!-- Datos personales -->
+        <div class="checkout-section">
+          <h5>Datos personales</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <input type="text" name="nombre" class="form-control prado-input" placeholder="Nombre" required
+                     value="{% if usuario %}{{ usuario }}{% endif %}">
+            </div>
+            <div class="col-md-6">
+              <input type="text" name="apellidos" class="form-control prado-input" placeholder="Apellidos" required>
+            </div>
+            <div class="col-12">
+              <input type="email" name="email" class="form-control prado-input" placeholder="Correo electrónico" required>
+            </div>
+            <div class="col-12">
+              <input type="tel" name="telefono" class="form-control prado-input" placeholder="Teléfono">
+            </div>
+          </div>
+        </div>
+
+        <!-- Dirección de envío -->
+        <div class="checkout-section">
+          <h5>Dirección de envío</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <input type="text" name="direccion" class="form-control prado-input" placeholder="Dirección" required>
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="cp" class="form-control prado-input" placeholder="Código postal" required>
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="ciudad" class="form-control prado-input" placeholder="Ciudad" required>
+            </div>
+            <div class="col-md-4">
+              <input type="text" name="provincia" class="form-control prado-input" placeholder="Provincia" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Método de pago -->
+        <div class="checkout-section">
+          <h5>Método de pago</h5>
+          <div class="card-icons">
+            <span class="card-icon">VISA</span>
+            <span class="card-icon">MC</span>
+            <span class="card-icon">AMEX</span>
+          </div>
+          <div class="row g-3">
+            <div class="col-12">
+              <input type="text" name="titular" class="form-control prado-input" placeholder="Titular de la tarjeta" required>
+            </div>
+            <div class="col-12">
+              <input type="text" name="tarjeta" class="form-control prado-input" placeholder="Número de tarjeta"
+                     maxlength="19" required pattern="[0-9 ]{13,19}">
+            </div>
+            <div class="col-md-6">
+              <input type="text" name="vencimiento" class="form-control prado-input" placeholder="MM/AA"
+                     maxlength="5" required pattern="[0-9]{2}/[0-9]{2}">
+            </div>
+            <div class="col-md-6">
+              <input type="text" name="cvv" class="form-control prado-input" placeholder="CVV"
+                     maxlength="4" required pattern="[0-9]{3,4}">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order summary -->
+      <div class="col-lg-5">
+        <div class="order-summary">
+          <h5 style="font-family: 'Georgia', serif; text-transform: uppercase; letter-spacing: 2px; font-size: 1rem; margin-bottom: 20px;">
+            Resumen del pedido
+          </h5>
+          {% for item in items %}
+          <div class="order-item">
+            <span class="order-item-name">{{ item.titulo }} x{{ item.cantidad }}</span>
+            <span>{{ item.subtotal | precio }} &euro;</span>
+          </div>
+          {% endfor %}
+          <div class="order-item">
+            <span>Envío</span>
+            <span>Gratis</span>
+          </div>
+          <div class="d-flex justify-content-between order-total">
+            <span>Total</span>
+            <span>{{ total_precio | precio }} &euro;</span>
+          </div>
+          <button type="submit" class="btn btn-prado w-100 mt-4">Confirmar y pagar</button>
+          <a href="/carrito" class="btn btn-prado-outline w-100 mt-2">Volver a la cesta</a>
+        </div>
+      </div>
+    </div>
+  </form>
+{% endif %}
+{% endblock %}

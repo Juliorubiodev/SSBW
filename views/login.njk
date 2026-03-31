@@ -1,0 +1,69 @@
+{% extends "base.njk" %}
+
+{% block title %}Iniciar sesión - Tienda Prado{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-container {
+    max-width: 420px;
+    margin: 40px auto;
+    padding: 40px;
+    border: 1px solid var(--prado-border);
+  }
+  .auth-title {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.3rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 30px;
+  }
+  .auth-separator {
+    text-align: center;
+    color: var(--prado-gray);
+    font-size: 0.85rem;
+    margin: 25px 0;
+  }
+  .auth-separator span {
+    background: #fff;
+    padding: 0 15px;
+    position: relative;
+    z-index: 1;
+  }
+  .auth-separator::before {
+    content: '';
+    display: block;
+    border-top: 1px solid var(--prado-border);
+    position: relative;
+    top: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <h1 class="auth-title">Iniciar sesión</h1>
+
+  {% if error %}
+  <div class="alert-prado alert-error">
+    <i class="bi bi-exclamation-circle"></i> Email o contraseña incorrectos
+  </div>
+  {% endif %}
+
+  <form action="/login" method="POST">
+    <div class="mb-3">
+      <input type="email" name="email" class="form-control prado-input"
+             placeholder="Correo electrónico" required>
+    </div>
+    <div class="mb-3">
+      <input type="password" name="password" class="form-control prado-input"
+             placeholder="Contraseña" required>
+    </div>
+    <button type="submit" class="btn btn-prado w-100">Iniciar sesión</button>
+  </form>
+
+  <div class="auth-separator"><span>¿No tienes cuenta?</span></div>
+
+  <a href="/registro" class="btn btn-prado-outline w-100">Crear cuenta</a>
+</div>
+{% endblock %}

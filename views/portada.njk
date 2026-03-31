@@ -1,0 +1,39 @@
+{% extends "base.njk" %}
+
+{% block title %}Impresiones - Tienda Prado{% endblock %}
+
+{% block content %}
+
+<h1 class="section-title">Impresiones</h1>
+
+{% if busqueda %}
+  <p class="product-count">Resultados para: <strong>"{{ busqueda }}"</strong> &mdash; {{ cards.length }} artículo(s)</p>
+{% else %}
+  <p class="product-count">Mostrando {{ cards.length }} artículo(s)</p>
+{% endif %}
+
+<!-- Grid de productos -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+  {% for card in cards %}
+  <div class="col">
+    <a href="/producto/{{ card.id }}" class="text-decoration-none">
+      <div class="card product-card h-100">
+        <img src="/public/imagenes/{{ card.imagen }}"
+             class="card-img-top"
+             alt="{{ card.titulo }}"
+             loading="lazy"
+             onerror="this.src='https://placehold.co/300x260?text=Sin+imagen'">
+        <div class="card-body">
+          <h6 class="card-title">{{ card.titulo }}</h6>
+          <p class="card-price">{{ card.precio | precio }} &euro;</p>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <p class="text-muted text-center py-5">No se encontraron productos.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

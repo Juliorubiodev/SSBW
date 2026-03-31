@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tarea 5</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/twig.min.js"></script>
+
+<script>hljs.highlightAll();</script>
+<style>
+	pre {
+		background-color: #FEFEFE;
+	}
+	code {
+		padding: 0 0 0 0 !important;
+	}
+	h3, h4 {
+		padding-bottom: 0.5rem;
+		padding-top: 1rem;
+	}
+</style>
+</head>
+
+<body>
+<div class="container has-text-justified">
+	
+	<figure class="image">
+		<img  style="width: 90%; height: 10rem; margin-left: 3vw; margin-top: 0px;padding-bottom: 1rem"
+		      src="https://i0.wp.com/staknine.com/wp-content/uploads/2021/12/Elixir-Logging-using-Logger.png?w=771&ssl=1" />
+	</figure>
+	<br>
+	<div class="content is-medium">
+		<h3 class="">Tarea 5: Logger, carrito </h3>
+
+		<p>
+			En esta tarea le pondremos un registro de eventos (logger) a la aplicación, e implementaremos la funcionalidad
+			de carrito
+		</p>
+		<h4>Logger</h4>
+		<p>
+			El <a href="https://medium.com/@itsmehemm/in-the-ever-evolving-world-of-web-application-development-creating-robust-secure-and-reliable-af3cd955f171+">registro de eventos</a> es básico en las aplicaciones web,
+			en la fase de desarrollo, y mucho más en la de producción. Un buen sistema de logging facilita la depuración de errores, la seguridad,,e incluso puede 
+			ser obligatorio por normativa.
+		</p>
+		<p>
+		   Usaremos <a href="https://github.com/winstonjs/winston">winston</a>, siguiendo 
+			<a href="https://betterstack.com/community/guides/logging/how-to-install-setup-and-use-winston-and-morgan-to-log-node-js-applications/">
+				A Complete Guide to Winston Logging in Node.js</a>. Usarlo es muy simple:
+				<pre><code class="language-javascript">import logger from "./logger.ts"
+logger.debug(`La variable x: ${x}`)  // mensaje al canal de debug
+logger.info('Info message');         // mensaje al canal de info
+logger.error('Error message');       // mensaje al canal de error</code></pre>	
+		</p>
+		<p>
+			La única dificultad es configurarlo para la salida en los distintos canales y para el formato de los mensajes. 
+			Una configuración para poner los mesajes de debug por consola y el resto ponerlos en un archivo:
+			<pre><code class="language-javascript">// logger.ts
+import winston from 'winston';
+const { combine, timestamp, printf, colorize, align, json } = winston.format;
+				
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  transports: [
+    new winston.transports.Console({
+      level:'debug',
+      format: combine(
+        colorize({ all: true  }),
+        timestamp({
+          format: 'YYYY-MM-DD hh:mm:ss A',
+        }),
+        align(),
+        printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
+      )		 
+    }),
+
+    new winston.transports.File({
+      filename: './logs/info.log',
+      level: 'info',
+      format: combine(timestamp(), json()),
+    }),
+
+    new winston.transports.File({
+      filename: './logs/error.log',
+      level: 'error',
+      format: combine(timestamp(), json()),
+    }),
+  ],
+});
+				
+export default logger</code></pre>
+   A partir de aquí se pueden usar <a href="https://github.com/winstonjs/winston/blob/master/docs/transports.md#winston-core">plugins</a> para usar logs rotatorios, mandar a un agregador, a telegram, etc.
+   </p>
+	<h4>Carrito</h4>
+	<p>
+		Haremos en parte, la funcionalidad del carrito de compras. Dejamos la visualización del drawer de la izquierda de la tienda, 
+		con las compras hechas hasta este momento, para mas adelante.
+	</p>
+	<p>
+		En esta tarea pondremos a funcionar la compra desde la página de detalle de cada producto, y el aviso en el icono de arriba de 
+		la página del número de productos comprados.
+	</p>
+	<p>
+		La información de los productos del carrito se guardará en el  servidor usando 
+		<a href="https://www.tutorialspoint.com/expressjs/expressjs_sessions.htm">sesiones</a>, que persisten hasta que se cierra el navegador.
+		En el servidor <b>index.ts</b>
+		<pre><code class="language-javascript"> // index.ts
+import session from 'express-session'
+...
+const app = express();
+
+// Middleware para los parámetros del formulario
+app.use(express.urlencoded({ extended: true }));
+
+// Middleware para las  sesiones
+app.use(session({
+  secret: 'my-secret',      // a secret string used to sign the session ID cookie
+  resave: false,            // don't save session if unmodified
+  saveUninitialized: false  // don't create session until something stored
+}))</code></pre>
+que se instala: 
+<pre><code class="language-bash">$ npm i express-session</code></pre>
+</p>
+<p>
+	El formulario de compras, 
+<pre><code class="language-twig">&lt;!-- detalle.njk --&gt;
+&lt;form action="/al-carrito/{{card.id}}" method="POST"&gt;
+  &lt;input type="number" value="1" name="cantidad" class="quantity-input"&gt;
+  &lt;button class="btn btn-cart" type="submit"&gt;Añadir a la cesta&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+los parámetros de la ruta url se cogen
+<a href="https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters#step-3-using-req-params-with-routes">
+	Using req.params in express</a> y los del formulario 
+	<a href="https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters#step-5-using-req-body-with-post-parameters">
+		Using body parameters in express</a>.
+</p>
+<p>
+	En el controlador que recibe el request, se pone una sesión con la información de compra, y además se pone la info 
+	en <a href="https://expressjs.com/es/5x/api.html#res.locals">res.locals</a> para que sea accesible en las plantillas, y que
+	se pueda marcar el icono del carrito con el númro de productos comprados.
+<pre><code class="language-javascript">// ./routes/productos.ts
+// carrito
+router.post ('/al-carrito/:id', async (req, res) => {
+  const id = Number(req.params.id)
+  const cantidad = Number(req.body.cantidad)
+  logger.debug(`Al carrito de ${id} ${cantidad} unidad(es)`)
+	
+  if (cantidad > 0) {
+    if (req.session.carrito !== undefined) {
+      req.session.carrito.push({id, cantidad})
+    } else {
+      req.session.carrito = [{id, cantidad}]		
+    }
+    // calcular el total de produtos del carrito
+    res.locals.total_carrito = total_carrito
+    req.session.total_carrito = total_carrito
+    logger.debug(res.locals.total_carrito)
+  }
+  // devollver la misma página de detalle del prodcuto
+  ...
+}</code></pre>
+</p>
+<p>
+	Para que la inforamción del carrito esté en todas las páginas hay que poner un  
+	<a href="https://expressjs.com/es/guide/using-middleware.html">middleware</a> en el servidor que
+	coja la información del carrito que está en la variable de sesión y la ponga también en
+	en la <a href="https://expressjs.com/es/5x/api.html#res.locals">res.locals</a> para que
+	esté disponible en todas las páginas.
+</p>
+		<br />
+		
+		<h6>Referencias:</h6>
+		<ul>
+			<li><a href="https://www.scaler.com/topics/expressjs-tutorial/express-session/">
+				Express Sessions
+			</a></li>
+			<li><a href="https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters#step-3-using-req-params-with-routes">
+				How To Retrieve URL and POST Parameters with Express
+			</a></li>
+		</ul>
+		<br/><br/>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+{% extends "base.njk" %}
+
+{% block title %}Administración - Tienda Prado{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-stat {
+    border: 1px solid var(--prado-border);
+    padding: 25px;
+    text-align: center;
+  }
+  .admin-stat .stat-number {
+    font-family: 'Georgia', serif;
+    font-size: 2rem;
+    font-weight: normal;
+    display: block;
+    margin-bottom: 5px;
+  }
+  .admin-stat .stat-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--prado-gray);
+  }
+  .admin-table {
+    font-size: 0.85rem;
+  }
+  .admin-table th {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--prado-gray);
+    border-bottom: 2px solid var(--prado-dark);
+  }
+  .admin-table td { vertical-align: middle; }
+  .tab-section { margin-top: 30px; }
+  .nav-tabs .nav-link {
+    border-radius: 0;
+    color: var(--prado-dark);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .nav-tabs .nav-link.active {
+    background: var(--prado-dark);
+    color: #fff;
+    border-color: var(--prado-dark);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="section-title">Panel de administración</h1>
+<p class="product-count">Bienvenido, {{ usuario }}</p>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="admin-stat">
+      <span class="stat-number">{{ total_productos }}</span>
+      <span class="stat-label">Productos</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="admin-stat">
+      <span class="stat-number">{{ total_usuarios }}</span>
+      <span class="stat-label">Usuarios</span>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="admin-stat">
+      <span class="stat-number">{{ total_pedidos }}</span>
+      <span class="stat-label">Pedidos</span>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tab-section">
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#tab-productos">Productos</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#tab-usuarios">Usuarios</a>
+    </li>
+  </ul>
+
+  <div class="tab-content pt-3">
+    <!-- Productos tab -->
+    <div class="tab-pane fade show active" id="tab-productos">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Imagen</th>
+            <th>Título</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in productos %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>
+              <img src="/public/imagenes/{{ p.imagen }}" style="width:50px; height:50px; object-fit:contain; background: var(--prado-light);"
+                   onerror="this.src='https://placehold.co/50x50?text=img'">
+            </td>
+            <td><a href="/producto/{{ p.id }}" class="text-dark">{{ p.titulo }}</a></td>
+            <td>{{ p.precio | precio }} &euro;</td>
+            <td>
+              <a href="/producto/{{ p.id }}" class="btn btn-sm btn-prado-outline" style="padding: 4px 12px; font-size: 0.75rem;">Ver</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Usuarios tab -->
+    <div class="tab-pane fade" id="tab-usuarios">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Rol</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in usuarios %}
+          <tr>
+            <td>{{ u.email }}</td>
+            <td>{{ u.nombre }}</td>
+            <td>
+              {% if u.admin %}
+                <span class="badge" style="background: #ffc107; color: #000;">Admin</span>
+              {% else %}
+                <span class="badge" style="background: var(--prado-light); color: var(--prado-gray);">Cliente</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

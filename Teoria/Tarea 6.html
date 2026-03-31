@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tarea 6</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/twig.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/markdown.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+	pre {
+		background-color: #FEFEFE;
+	}
+	code {
+		padding: 0 0 0 0 !important;
+	}
+	h3, h4, h5 {
+		padding-bottom: 0.5rem;
+		padding-top: 1.25rem;
+		font-weight: 600 !important;
+	}
+</style>
+</head>
+
+<body>
+<div class="container has-text-justified">
+	
+	<figure class="image">
+		<img  style="width: 100%; height: 18rem; margin-left: 0vw; margin-top: 0px;padding-bottom: 1rem"
+		      src="https://cdn.hashnode.com/res/hashnode/image/upload/v1704168155475/7f34124f-8535-4584-b67a-eef252163534.png" />
+	</figure>
+	<br>
+	<div class="content is-medium">
+		<h3 class="">Tarea 6: Autentificación</h3>
+		<p>
+			En esta tarea añadiremos la autentificación a la tienda.
+		</p>
+		<h5>Cambio en el esquema</h5>
+		<p>
+			Añadimos una tabla nueva en <b>schema.prisma</b>
+			<pre><code class="language-javascript">model Usuario {
+  email      String  @id @db.Char(127)
+  nombre     String  @db.Char(127)
+  contraseña String  @db.Text
+  admin      Boolean @default(false)
+}</code></pre>
+       y hacemos la migración y generación del cliente:
+			 <pre><code class="language-bash">$ npx prisma migrate dev --name con_usuario
+$ npx prisma generate</code></pre>
+		</p>
+		<h4>Métodos para hashing de contraseña en el model</h4>
+		<p>
+			Las constraseñas no se deben guardar tal cual porque sería un fallo grave de seguridad. Se deben pasar por un 
+			<a href="https://blog.logto.io/es/hashing-de-contrasenas"> algoritmo de hashing</a> para almacenarlas en la BD.
+			Lo suyo es que estos metódos de hacer el hash y comprobarlo esten en el <b>model</b> asociados a la BD. 
+		</p>
+		<p>
+			Le preguntamos a la IA como hacerlo y vamos iterando:
+<pre><code class="language-markdown"># Prompts:
+Como cifrar y descifrar contraseñas automáticamente en prisma js
+
+¿podrías actualizar el código para usar la versión 7 de Prisma en lugar de la 6
+
+que devuelva un error en lugar de null</code></pre>
+		</p>
+		<h5>Script para registro / comprobación de usuarios</h5>
+		<p>
+			Haremos un script <b>registra_usuarios.ts</b> para registrar algunos usuarios de prueba, y comprobar que
+			se autentifican correctamente.
+		</p>
+		<h5>Pantalla de autentificación</h5>
+		<p>
+			Haremos una pantalla de autentificación para la tienda como <a href="https://tiendaprado.com/es/iniciar-sesion?back=my-account">esta</a>,
+			solo con la parte de autentificación, sin las opciones de cambio de contraseña o registro. Este formulario estará atendido desde 
+			un nuevo archivo <b>routes/usuarios.ts</b>
+		</p>
+		<h5>Token de autentificación en una cookie</h5>
+		<p>
+			Para mantener la autentificación entre distintas páginas usaremos <a href="https://auth0.com/docs/secure/tokens/json-web-tokens">
+			Json Web Tokens</a>, que se intercambian entre el servidor y el navegador en una 
+			<a href="https://www.cyberchief.ai/2023/01/how-to-securely-use-json-web-tokens-in.html">How to securely use JSON Web Tokens 
+			in a cookie with Node.js</a>.
+		</p>
+		<p>
+			Cuando se comprueban las credenciales, se emite un token <b>JWT</b> con la identificación del usuario y en su 
+			caso los permisos:
+			<pre><code class="language-javascript">// ./routes/usuarios.ts
+import jwt from "jsonwebtoken"
+
+router.get('/login', (req, res) => {
+	res.render('login.njk', {error:false})
+})
+
+router.post('/login', async (req, res) => {
+  // desde el formulario
+  const {email, contraseña} = req.body 
+
+  try {
+    const usuario = await prisma.usuario.autentifica(email, contraseña)
+    const token = jwt.sign({usuario: usuario.nombre, admin:usario:admin}, process.env.SECRET_KEY)
+
+    res.cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.IN === 'production'
+      }).redirect('/')
+
+  } catch(error) {
+    logger.error(error.message)
+    res.render('login.njk', {error:true}		
+  }
+})				
+
+router.get('/logout', (req, res)=> {
+  // resetear la cookie 
+  // redirigir a '/'
+})</code></pre>
+<h5>Middleware de autentificación</h5>
+    <p>
+		En un middleware se comprueba el token y se pone la información en el request y en locals, para que esté 
+		accesible en adelante:
+		<pre><code class="language-javascript">// index.ts 
+import cookieParser from 'cookie-parser'
+import jwt from 'jsonwebtoken'
+...
+app.use(cookieParser())
+...
+
+// middleware de autentificación, justo antes de los routes
+// para que solamente les afecte a estas rutas
+app.use((req, res, next) => {
+  const token = req.cookies.access_token;
+  if (token) {
+     const data = jwt.verify(token, process.env.SECRET_KEY);
+     req.usuario = data.usuario                      // username 
+     req.admin   = data.admin                        // y role en el request
+     app.locals.usuario = data.usuario               // y accesible en las plantillas
+     app.locals.admin   = <data class="admin"></data>
+     logger.info(`Autentificado ${data.usuario} admin:${data.admin}`)                         
+  } else {
+     app.locals.usuario = undefined
+     app.locals.admin = undefined
+  }
+  next()
+})</code></pre>
+		</p>
+
+		<h5>Cambio en el menú superior</h5>
+		<p>
+			Cambiar el menú de arriba, para substituir el icono de de login por uno de logout 
+			cuando los usuarios estén logeados.
+		</p>
+
+		<br />
+		
+		<h6>Referencias:</h6>
+		<ul>
+			<li>
+				<a href="https://www.codu.co/infinitemax/beginner-s-authentication-jwt-and-cookies-ifw5htmd">
+					Beginner's authentication, JWT and cookies
+				</a>
+				<li><a href="https://drive.google.com/file/d/1WNamntExOH-pQI_1qAnSLdU1Krsu0y32/view">Flujo de datos de autentificación</a></li>
+				<li><a href="https://www.geeksforgeeks.org/web-tech/express-js-res-redirect-function/">
+					Express.js res.redirect() 
+				</a></li>
+				<li><a href="https://ull-esit-pl-1617.github.io/estudiar-cookies-y-sessions-en-expressjs-victor-pamela-jesus/cookies/chapter5.html">
+					Manejo de Cookies en Express.js</a></li>
+				<li><a href="https://codigofacilito.com/articulos/middleware-express">
+					Qué es un Middleware en Express</a></li>
+				<li><a href="https://www.tutorialspoint.com/express-js-app-locals-property">
+					Express.js – app.locals Property
+				</a></li>				
+			</li>
+		</ul>
+		<br/><br/>
+	</div>
+</div>
+</body>
+</html>

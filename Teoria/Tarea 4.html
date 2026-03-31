@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tarea 4</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/javascript.min.js"></script>
+
+<script>hljs.highlightAll();</script>
+<style>
+	pre {
+		background-color: #FEFEFE;
+	}
+	code {
+		padding: 0 0 0 0 !important;
+	}
+	h3 {
+		padding-bottom: 0.5rem;
+	}
+</style>
+</head>
+
+<body>
+<div class="container has-text-justified">
+	
+	<figure class="image">
+		<img  style="width: 90%; height: 16rem; margin-left: 3vw; margin-top: 0px;padding-bottom: 1rem"
+		      src="https://selftaughtcoders.com/wp-content/uploads/2015/07/image-request-route-controller-view.png" />
+	</figure>
+	<br />		
+	<div class="content is-medium">
+		<h3 class="">Tarea 4: Portada, búsquedas y páginas de detalle </h3>
+
+		<p>
+			Para esta tarea pondremos una <a href="https://drive.google.com/file/d/1voT-tq7LOetap2KG_r-VvXIEzkvVO2Qf/view?usp=drive_link">portada</a> a la tienda con funcionalidad de búsquedas, y 
+			<a href="https://drive.google.com/file/d/1-bV-JKabx2878OD0yaW9NrOH353AjtN3/view?usp=drive_link">paginas de detalle</a> para cada producto. Dejamos para la tarea siguiente el carrito.
+		</p>
+		<p>
+			Seguimos el patrón de software <b>MVC</b>, con <a href="https://www.prisma.io/docs">Prisma</a> para 
+			el <code class="has-text-warnign px-2">Model</code> y plantillas <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a> para las
+			<code class="has-text-warnign px-2">Vistas</code>. 
+		</p>
+		<p>
+			La estructura, con carpetas separadas para el model, view y controler:
+<pre>├── <b>prisma</b>                   <b>Model</b>
+⃑⃑│    ├── prisma.client.ts    <i>Conexión BD</i>
+│    └── schema.prisma       <i>Esquema</i>
+├── <b>imagenes</b>                 <i>Imágenes</i>
+├── <b>routes</b>                   <b>Controladores</b>
+│    └── productos.ts
+├── <b>views</b>                    <b>Vistas (html)</b>
+│    ├── base.njk
+│    ├── portada.njk
+│    └── detalle.njk
+├── .env                     <i>Variables de entorno (y passwords)</i>
+├── docker-compose.yml       <i>Base De Datos PostgreSQL</i>
+├── index.ts                 <i>Servidor</i>
+└── package.json</pre>
+      </p>			 
+		<p>
+			En el servidor <b>index.ts</b>:
+<pre><code class="language-javascript">...
+// middelware para servidor de archivos: url /public/imagenes servida desde carpeta imagenes
+app.use('/public/imagenes', express.static('imagenes'))   
+
+// 'último' middleware
+import ProductosRouter from "./routes/productos.ts"
+app.use('/', ProductosRouter)</code></pre>
+en <b>routes/productos.ts</b>
+<pre><code class="language-javascript">import express from "express"
+import prisma from "../prisma/prisma.client.ts"
+const router = express.Router()
+
+// portada
+router.get ('/', async (req, res) => {
+  try {
+    const cards = await prisma.producto.findMany({
+      omit: {
+        descripción:true
+      }
+    })
+    res.render('portada.njk', {cards})
+		
+  } catch(error) {
+    console.error("~ error:", error.message)
+    res.status(500).send(`Error: ${error.message}`)
+  }
+})
+
+// añadir otro para detalle en /producto/:id
+// y otro para las búsquedas en /buscar?busqueda=Lámina 
+
+export default router</code></pre>
+</p>
+<p>
+	Para las plantillas tendremos en cuenta la <a href="https://flask.palletsprojects.com/en/stable/patterns/templateinheritance/">
+		herencia</a>, poniendo en archivo <b>base.njk</b> el esqueleto de html, con lo que no cambia de página a página.
+</p>
+<p>
+	El html y css podemos pedirselo a la IA, a partir de capturas de pantalla de 
+	<a href="https://tiendaprado.com/es/385-impresiones">Tienda Prado</a>. Para el css usar 
+	<a href="https://getbootstrap.com/docs/5.3/getting-started/introduction/">Bootstrap</a>.
+</p>
+		
+
+		<br />
+		
+		<h6>Referencias:</h6>
+		<ul>
+			<li>
+				<a href="https://expressjs.com/en/starter/static-files.html">Serving static files in Express</a>
+			</li>
+			<li>
+				<a href="https://medium.com/nerd-for-tech/understanding-routing-in-express-js-as-simple-as-possible-45b4a852c4a0">
+					Understanding Routing In Express.js As Simple As Possible
+				</a>
+			</li>
+			<li>
+				<a href="https://lenguajehtml.com/html/formularios/etiqueta-html-form/">La etiqueta form</a>
+			</li>
+			<li>
+				<a href="https://www.digitalocean.com/community/tutorials/use-expressjs-to-get-url-and-post-parameters">How To Retrieve URL and POST Parameters with Express</a>
+			</li>
+			<li>
+				<a href="https://archive.jlongster.com/Introducing-Nunjucks,-a-Better-Javascript-Templating-System">
+					Introducing Nunjucks, a Better Javascript Templating System
+				</a>
+			</li>
+			<li>
+				<a href="https://mozilla.github.io/nunjucks/templating.html">
+					Nunjucks Templating
+				</a>
+			</li>
+			<li>
+				<a href="https://www.tutorialrepublic.com/twitter-bootstrap-tutorial/">Bootstrap tutorial</a>
+			</li>
+		</ul>
+		<br/><br/>
+	</div>
+</div>
+</body>
+</html>

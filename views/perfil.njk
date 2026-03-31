@@ -1,0 +1,89 @@
+{% extends "base.njk" %}
+
+{% block title %}Mi cuenta - Tienda Prado{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-container {
+    max-width: 600px;
+    margin: 30px auto;
+  }
+  .profile-card {
+    border: 1px solid var(--prado-border);
+    padding: 35px;
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: var(--prado-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--prado-gray);
+    margin: 0 auto 20px;
+  }
+  .profile-name {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  .profile-email {
+    text-align: center;
+    color: var(--prado-gray);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+  }
+  .profile-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .profile-badge.admin { background: #ffc107; color: #000; }
+  .profile-badge.user { background: var(--prado-light); color: var(--prado-gray); }
+  .profile-info dt { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--prado-gray); }
+  .profile-info dd { font-size: 0.95rem; margin-bottom: 15px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+  <h1 class="section-title">Mi cuenta</h1>
+
+  <div class="profile-card">
+    <div class="profile-avatar"><i class="bi bi-person"></i></div>
+    <h2 class="profile-name">{{ perfil.nombre }}</h2>
+    <p class="profile-email">{{ perfil.email }}</p>
+    <div class="text-center">
+      {% if perfil.admin %}
+        <span class="profile-badge admin">Administrador</span>
+      {% else %}
+        <span class="profile-badge user">Cliente</span>
+      {% endif %}
+    </div>
+
+    <hr class="my-4">
+
+    <dl class="profile-info">
+      <dt>Nombre</dt>
+      <dd>{{ perfil.nombre }}</dd>
+      <dt>Email</dt>
+      <dd>{{ perfil.email }}</dd>
+      <dt>Rol</dt>
+      <dd>{% if perfil.admin %}Administrador{% else %}Cliente{% endif %}</dd>
+    </dl>
+
+    <div class="d-flex gap-2 mt-4">
+      {% if perfil.admin %}
+        <a href="/admin" class="btn btn-prado flex-fill">Panel de administración</a>
+      {% endif %}
+      <a href="/logout" class="btn btn-prado-outline flex-fill">Cerrar sesión</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

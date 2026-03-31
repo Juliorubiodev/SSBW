@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Tarea 2</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/github.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"></script>
+
+<!-- and it's easy to individually load additional languages -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.0/languages/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.0/languages/json.min.js"></script>
+
+<script>hljs.highlightAll();</script>
+<style>
+	body {
+		background-color: #FEFEFE;
+	}
+	pre {
+		background-color: #FDFDFD;
+	}
+	code {
+		padding: 0;
+		line-height: 1.75;
+	}
+</style>
+</head>
+
+<body>
+<div class="container">
+	
+	<figure class="image">
+		<img  style="width: 90%; height: 18rem; margin-left: 3vw; margin-top: 0px;"
+		      src="https://vmasv.cl/wp-content/uploads/2025/02/image_AV4OALOLU4-1536x640.jpeg" />
+	</figure>
+	<br />		
+	<div class="content is-medium">
+		<h3>Tarea 2: Web scraping</h3>
+		<p>
+			En esta tarea obtendremos los datos para rellenar una Base De Datos en la tarea siguente. 
+			Haremos 
+			<a href="https://kinsta.com/es/base-de-conocimiento/que-es-web-scraping/">scraping</a> 
+			del sitio web del <a href="https://tiendaprado.com/es/385-impresiones">
+			Tienda Prado</a> para recoger uan lista con la información de cada uno de los productos de la tienda:
+			<pre><code class="language-json">[
+...
+  {
+    "título": "Tako \"El jardín de las delicias\" (construcción rosa)",
+    "descripción": "Madera de haya. 20 x 20 cm.\nEl Bosco pintó varias construcciones imaginarias ...",
+    "texto_precio": "30,00 €",
+    "imagen": "tako__el_jard_n_de_las_delicias___construcci_n_rosa_.jpg"
+  }
+  ...
+]</code></pre>
+				que guardaremos en un archivo <b>productos.json</b>. También bajaremos las imágenes en una carpeta local 
+				<b>imagenes</b>.
+			  <p>
+					El nombre del archivo de la imagen, se puede generar a partir del título:
+<pre><code class="language-javascript">const nombre_archivo_desde = (título) => título.replace(/[^a-z0-9]/gi, '_').toLowerCase()</code></pre>
+				</p>
+		<h4 class="mt-6">Scrapper</h4>
+		<p>
+			Para el scrapper usaremos la librería <a href="https://playwright.dev/">Playwright</a>.
+			Esta librería es mas completa que simplemente cargar el html: instancia un navegador y funciona
+			tal cual este, esperarando a que se vayan cargando 
+			todos los elementos de la página, pudiendo interaccionar con ella: hacer click, rellenar campos de formularios, etc.
+			 Además la vamos a utilizar también para testing E2E mas adelante.
+		</p>
+		<p>
+			Instalamos e inicializamos <code>Playwright</code>:
+			<pre><code class="language-bash">$ npm i -D playwright
+$ npx playwright install</code></pre>
+          '-D' es para que se instale como dependencia de desarrollo.
+		</p>
+		<p>
+			Siguiendo
+			<a href="https://brightdata.com/blog/how-tos/playwright-web-scraping">A Guide to Playwright Web Scraping in 2025</a> y la IA 
+			del ejercicio de teoría, 
+			hacemos un script <b>scrap-tp.js</b>:
+<pre><code class="language-javascript">import {chromium} from "playwright"  // O 'webkit' or 'firefox'
+...
+// Función auxiliar para crear pausas que simulan el comportamiento humano, asíncrona
+const esperar = (mili_segundos) => new Promise(resolve => setTimeout(resolve, mili_segundos));
+
+// También podemos poner esta función sin usar Promises
+async function espera(ms) {
+  setTimeout(()=>console.log(`Salgo después de ${ms} ms`), ms)
+}
+
+const browser = await chromium.launch({ headless: true });   // headless: sin abrir el navegador, más rápido
+await browser.newContext({                                   // simula el chrome de escritorio
+   userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.3'
+})
+
+const page = await browser.newPage()
+try {
+	// para que salgan todos los productos de Tienda Prado
+	await page.goto('https://tiendaprado.com/es/385-impresiones?resultsPerPage=999', {timeout:8000});
+} catch (error) {
+	console.error(error)
+	process.exit(1)
+}
+
+page.once('load', () => console.log('Página cargada'))
+await page.waitForTimeout(3000);  // espera 3 segundos</code></pre>
+		</p>
+		<p>
+			Para recuperar la información que nos interese, es mejor usar  los <a href="https://playwright.dev/docs/locators">locators</a>
+			de playwright, ya tienen espera autmática y son más robustos que otro métodos anteriores.
+			Para acceder a el/los elemento(s) que nos interesa(n), se puede usar la misma sintáxis de los selectores de css, p.e. 
+<pre><code class="language-javascript">const locators_páginas = page.locator('.thumbnail-container > a')</code></pre>
+
+<p>
+	<code>locator</code> responde o bien con una lista si encuentra varios elementos, o bien con un objeto con métodos 
+	similares a la API del DOM si encuentra uno solo <code>getAttribute()</code>, <code>innerText()</code> o 
+	<code>textContent()</code> entre otros:
+</p>
+
+<pre><code class="language-javascript">const lista_páginas = []
+for (const loc of await locators_páginas.all()) {   // son varios elementos encontrados
+  const página = await loc.getAttribute('href')     // un solo elemento ahora
+  lista_páginas.push(página)
+}
+...
+// y se irian recorriendo las páginas <b>introduciendo un retardo</b>
+// para recoger la información que nos interese </code></pre>
+		</p>
+
+
+		<br />
+		<h6>Referencias:</h6>
+		<ul>
+			<li><a href="https://playwright.dev/docs/intro">Playwright Getting Started</a></li>
+			<li><a href="https://playwright.dev/docs/api/class-elementhandle#element-handle-eval-on-selector">$eval</a> (desaconsejado)</li>
+			<li><a href="https://playwright.dev/docs/locators">Locators</a></li>
+			<li><a href="https://playwright.dev/docs/api/class-locator">Locator API</a></li>
+			<li>
+				<a href="https://appletree.or.kr/quick_reference_cards/CSS/CSS%20selectors%20cheatsheet.pdf">CSS Selectors cheatsheet</a>
+			</li>
+		</ul>
+		<br/><br/>
+	</div>
+</div>
+</body>
+</html>
