@@ -1,0 +1,43 @@
+# Test API Tienda Prado
+# Requiere extensión REST Client en VSCode
+
+### Todos los productos (paginación y ordenación)
+GET http://localhost:3000/api/productos
+
+###
+
+GET http://localhost:3000/api/productos?desde=0&hasta=10&ordenacion=ascendente
+
+###
+
+GET http://localhost:3000/api/productos?desde=0&hasta=10&ordenacion=descendente
+
+### Producto por id
+GET http://localhost:3000/api/productos/1
+
+###
+
+GET http://localhost:3000/api/productos/229
+
+### Añadir producto
+POST http://localhost:3000/api/productos
+Content-Type: application/json
+
+{
+  "titulo": "Producto de prueba",
+  "descripcion": "Descripción del producto de prueba",
+  "precio": 25.00,
+  "imagen": "prueba.jpg"
+}
+
+### Actualizar producto (solo los campos enviados)
+PUT http://localhost:3000/api/producto/1
+Content-Type: application/json
+
+{
+  "titulo": "Título actualizado",
+  "precio": 19.99
+}
+
+### Eliminar producto
+DELETE http://localhost:3000/api/productos/1
