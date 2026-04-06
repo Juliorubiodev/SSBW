@@ -18,13 +18,15 @@ Réplica de la tienda online del Museo del Prado desarrollada para la asignatura
 ```
 ├── routes/          # Controladores (Express Router)
 │   ├── productos.ts # Portada, búsqueda, detalle, carrito, checkout
-│   └── usuarios.ts  # Login, registro, perfil, admin
+│   ├── usuarios.ts  # Login, registro, perfil, admin
+│   └── api.ts       # API RESTful de productos
 ├── views/           # Vistas (Nunjucks)
 │   ├── base.njk     # Plantilla base con navbar y footer
 │   └── *.njk        # Portada, detalle, carrito, checkout, perfil, admin...
 ├── prisma/          # Modelo
 │   ├── schema.prisma
 │   └── prisma.client.ts  # Cliente con extensiones registra/autentifica
+├── imagenes/        # Imágenes de productos (incluidas en el repo)
 ├── index.ts         # Punto de entrada, middlewares
 ├── logger.ts        # Configuración Winston
 ├── seed.ts          # Poblar BD desde productos.json
@@ -46,12 +48,10 @@ npm install
 
 ### 3. Variables de entorno
 
-Crear archivo `.env` en la raíz:
+Copiar el archivo de ejemplo y ajustar si es necesario:
 
-```env
-DATABASE_URL="postgresql://postgres:una_clave_muy_segura_123@localhost:5433/ssbw?schema=public"
-SECRET_KEY="ssbw_tienda_prado_secret_key_2026"
-LOG_LEVEL="debug"
+```bash
+cp .env.example .env
 ```
 
 ### 4. Base de datos
@@ -60,10 +60,13 @@ LOG_LEVEL="debug"
 # Levantar PostgreSQL en Docker
 docker-compose up -d
 
+# Generar cliente de Prisma
+npx prisma generate
+
 # Aplicar migraciones
 npx prisma migrate deploy
 
-# Poblar productos (scrapeados de tiendaprado.com)
+# Poblar productos
 npx tsx seed.ts
 
 # Crear usuarios de prueba
@@ -92,5 +95,4 @@ La aplicación estará disponible en `http://localhost:3000`.
 |------|-----------|
 | `main` | Código actualizado |
 | `entrega-1` | Tareas 1–6 |
-| `entrega-2` | Pendiente |
-| `entrega-3` | Pendiente |
+| `entrega-2` | Tarea 7 (API RESTful) |
