@@ -19,8 +19,6 @@ Thumbs.db
 
 # Scraping artifacts
 cookies.txt
-imagenes/
 
-# Zips de teoría (opcionales, ya están los HTML)
-Teoria/*.zip
-Teoria/*.pdf
+# Enunciados del profesor
+Teoria/
