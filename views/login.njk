@@ -37,6 +37,32 @@
     position: relative;
     top: 12px;
   }
+  /* Toggle password visibility */
+  .password-wrapper {
+    position: relative;
+  }
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--prado-gray);
+    padding: 0;
+    font-size: 1.1rem;
+  }
+  .password-toggle:hover { color: var(--prado-dark); }
+  /* Validation styles */
+  .prado-input.is-invalid { border-color: #dc3545; }
+  .prado-input.is-valid { border-color: #198754; }
+  .field-error {
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: none;
+  }
 </style>
 {% endblock %}
 
@@ -50,20 +76,69 @@
   </div>
   {% endif %}
 
-  <form action="/login" method="POST">
+  <form action="/login" method="POST" id="login-form" novalidate>
     <div class="mb-3">
-      <input type="email" name="email" class="form-control prado-input"
-             placeholder="Correo electrónico" required>
+      <label for="login-email" class="form-label" style="font-size:0.85rem; letter-spacing:0.5px;">CORREO ELECTRÓNICO</label>
+      <input type="email" name="email" id="login-email"
+             class="form-control prado-input"
+             placeholder="tu@correo.com"
+             inputmode="email"
+             autocomplete="email"
+             required autofocus>
+      <div class="field-error" id="email-error">Introduce un email válido</div>
     </div>
     <div class="mb-3">
-      <input type="password" name="password" class="form-control prado-input"
-             placeholder="Contraseña" required>
+      <label for="login-password" class="form-label" style="font-size:0.85rem; letter-spacing:0.5px;">CONTRASEÑA</label>
+      <div class="password-wrapper">
+        <input type="password" name="password" id="login-password"
+               class="form-control prado-input"
+               placeholder="Tu contraseña"
+               autocomplete="current-password"
+               required>
+        <button type="button" class="password-toggle" aria-label="Mostrar contraseña"
+                onclick="togglePassword('login-password', this)">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
     </div>
-    <button type="submit" class="btn btn-prado w-100">Iniciar sesión</button>
+    <button type="submit" class="btn btn-prado w-100">Acceder a mi cuenta</button>
   </form>
 
   <div class="auth-separator"><span>¿No tienes cuenta?</span></div>
 
   <a href="/registro" class="btn btn-prado-outline w-100">Crear cuenta</a>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Toggle password visibility
+  function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId)
+    const icon = btn.querySelector('i')
+    if (input.type === 'password') {
+      input.type = 'text'
+      icon.classList.replace('bi-eye', 'bi-eye-slash')
+    } else {
+      input.type = 'password'
+      icon.classList.replace('bi-eye-slash', 'bi-eye')
+    }
+  }
+
+  // Validate on blur
+  const emailInput = document.getElementById('login-email')
+  const emailError = document.getElementById('email-error')
+
+  emailInput.addEventListener('blur', function() {
+    if (this.value && !this.validity.valid) {
+      this.classList.add('is-invalid')
+      this.classList.remove('is-valid')
+      emailError.style.display = 'block'
+    } else if (this.value) {
+      this.classList.remove('is-invalid')
+      this.classList.add('is-valid')
+      emailError.style.display = 'none'
+    }
+  })
+</script>
 {% endblock %}

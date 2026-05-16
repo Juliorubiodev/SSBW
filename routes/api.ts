@@ -99,4 +99,64 @@ router.delete('/productos/:id', async (req, res) => {
   }
 })
 
+// GET /api/carrito — devuelve items del carrito con datos del producto
+router.get('/carrito', async (req, res) => {
+  try {
+    const carrito = (req.session as any).carrito || []
+    if (carrito.length === 0) return res.json([])
+
+    const { prisma } = await import("../prisma/prisma.client.ts")
+    const ids = carrito.map((item: any) => item.id)
+    const productos = await prisma.producto.findMany({ where: { id: { in: ids } } })
+
+    const items = carrito.map((item: any) => {
+      const prod = productos.find((p: any) => p.id === item.id)
+      if (!prod) return null
+      return {
+        id: prod.id,
+        titulo: prod.titulo,
+        imagen: prod.imagen,
+        precio: Number(prod.precio),
+        cantidad: item.cantidad,
+        subtotal: Number(prod.precio) * item.cantidad
+      }
+    }).filter(Boolean)
+
+    res.json(items)
+  } catch (error: any) {
+    logger.error(`API GET /carrito: ${error.message}`)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// DELETE /api/carrito/:id — quita un producto del carrito
+router.delete('/carrito/:id', (req, res) => {
+  const id = Number(req.params.id)
+  const session = req.session as any
+  if (session.carrito) {
+    session.carrito = session.carrito.filter((item: any) => item.id !== id)
+    session.total_carrito = session.carrito.reduce((acc: number, item: any) => acc + item.cantidad, 0)
+  }
+  res.json({ mensaje: `Producto ${id} eliminado del carrito` })
+})
+
+// GET /api/imagen-aleatoria — devuelve una imagen aleatoria de la tienda
+router.get('/imagen-aleatoria', async (req, res) => {
+  try {
+    const { prisma } = await import("../prisma/prisma.client.ts")
+    const count = await prisma.producto.count()
+    const skip = Math.floor(Math.random() * count)
+    const producto = await prisma.producto.findFirst({ skip, take: 1 })
+    if (!producto) return res.status(404).json({ error: 'No hay productos' })
+    res.json({
+      id: producto.id,
+      titulo: producto.titulo,
+      imagen: `/public/imagenes/${producto.imagen}`
+    })
+  } catch (error: any) {
+    logger.error(`API GET /imagen-aleatoria: ${error.message}`)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 export default router
