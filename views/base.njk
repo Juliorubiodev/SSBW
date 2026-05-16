@@ -314,10 +314,11 @@
             <i class="bi bi-person"></i>
           </a>
         {% endif %}
-        <a href="/carrito" class="icon-link">
+        <a href="javascript:void(0)" class="icon-link" id="btn-carrito-offcanvas"
+           data-bs-toggle="offcanvas" data-bs-target="#carritoOffcanvas">
           <i class="bi bi-bag"></i>
           {% if total_carrito %}
-            <span class="cart-count">{{ total_carrito }}</span>
+            <span class="cart-count" id="cart-badge">{{ total_carrito }}</span>
           {% endif %}
         </a>
       </div>
@@ -352,7 +353,132 @@
     <p class="mb-0">SSBW &mdash; Tienda Prado &mdash; Sistemas Software Basados en Web</p>
   </footer>
 
+  <!-- Offcanvas del carrito -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="carritoOffcanvas">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title" style="font-size:0.95rem; text-transform:uppercase; letter-spacing:1px;">
+        <i class="bi bi-bag"></i> Mi cesta
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+      <div id="offcanvas-cart-items"></div>
+      <div id="offcanvas-cart-empty" class="text-center p-4" style="color:var(--prado-gray); display:none;">
+        <i class="bi bi-bag" style="font-size:2rem; opacity:0.5;"></i>
+        <p class="mt-2 mb-0">Tu cesta está vacía</p>
+      </div>
+    </div>
+    <div class="offcanvas-footer border-top p-3" id="offcanvas-cart-footer" style="display:none;">
+      <div class="d-flex justify-content-between mb-3 fw-semibold">
+        <span>Total</span>
+        <span id="offcanvas-cart-total"></span>
+      </div>
+      <a href="/carrito" class="btn btn-prado w-100 mb-2">Ver cesta completa</a>
+      <a href="/checkout" class="btn btn-prado-outline w-100">Finalizar pedido</a>
+    </div>
+  </div>
+
+  <!-- HTML Template para items del carrito (cloneNode) -->
+  <template id="cart-item-template">
+    <div class="cart-offcanvas-item d-flex align-items-center gap-3 p-3 border-bottom">
+      <img src="" alt="" class="cart-oc-img" style="width:60px; height:60px; object-fit:contain; background:var(--prado-light); padding:4px;">
+      <div class="flex-grow-1">
+        <p class="mb-0" style="font-size:0.85rem; line-height:1.3;" data-field="titulo"></p>
+        <small style="color:var(--prado-gray);" data-field="cantidad-precio"></small>
+      </div>
+      <div class="text-end">
+        <p class="mb-1 fw-semibold" style="font-size:0.85rem;" data-field="subtotal"></p>
+        <button class="btn btn-sm btn-link text-danger p-0 cart-oc-delete" style="font-size:0.8rem;">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+  </template>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Carrito offcanvas con fetch API + HTML template + cloneNode
+    const cartOffcanvas = document.getElementById('carritoOffcanvas')
+    const cartItemsContainer = document.getElementById('offcanvas-cart-items')
+    const cartEmpty = document.getElementById('offcanvas-cart-empty')
+    const cartFooter = document.getElementById('offcanvas-cart-footer')
+    const cartTotal = document.getElementById('offcanvas-cart-total')
+    const cartTemplate = document.getElementById('cart-item-template')
+
+    // Cargar carrito al abrir el offcanvas
+    cartOffcanvas.addEventListener('show.bs.offcanvas', loadCart)
+
+    async function loadCart() {
+      try {
+        const response = await fetch('/api/carrito')
+        const items = await response.json()
+        renderCart(items)
+      } catch (error) {
+        console.error('Error cargando carrito:', error)
+      }
+    }
+
+    function renderCart(items) {
+      cartItemsContainer.innerHTML = ''
+
+      if (items.length === 0) {
+        cartEmpty.style.display = 'block'
+        cartFooter.style.display = 'none'
+        return
+      }
+
+      cartEmpty.style.display = 'none'
+      cartFooter.style.display = 'block'
+
+      let total = 0
+      items.forEach(item => {
+        // Usar template + cloneNode como pide la tarea
+        const clone = cartTemplate.content.cloneNode(true)
+
+        const img = clone.querySelector('img')
+        img.src = '/public/imagenes/' + item.imagen
+        img.alt = item.titulo
+        img.onerror = function() { this.src = 'https://placehold.co/60x60?text=img' }
+
+        clone.querySelector('[data-field="titulo"]').textContent = item.titulo
+        clone.querySelector('[data-field="cantidad-precio"]').textContent =
+          item.cantidad + ' x ' + formatPrecio(item.precio) + ' \u20AC'
+        clone.querySelector('[data-field="subtotal"]').textContent =
+          formatPrecio(item.subtotal) + ' \u20AC'
+
+        const deleteBtn = clone.querySelector('.cart-oc-delete')
+        deleteBtn.dataset.id = item.id
+        deleteBtn.addEventListener('click', () => removeFromCart(item.id))
+
+        cartItemsContainer.appendChild(clone)
+        total += item.subtotal
+      })
+
+      cartTotal.textContent = formatPrecio(total) + ' \u20AC'
+    }
+
+    async function removeFromCart(id) {
+      try {
+        await fetch('/api/carrito/' + id, { method: 'DELETE' })
+        await loadCart()
+        // Actualizar badge
+        const badge = document.getElementById('cart-badge')
+        const response = await fetch('/api/carrito')
+        const items = await response.json()
+        const count = items.reduce((acc, item) => acc + item.cantidad, 0)
+        if (badge) {
+          if (count > 0) { badge.textContent = count }
+          else { badge.remove() }
+        }
+      } catch (error) {
+        console.error('Error eliminando del carrito:', error)
+      }
+    }
+
+    function formatPrecio(val) {
+      return Number(val).toFixed(2).replace('.', ',')
+    }
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

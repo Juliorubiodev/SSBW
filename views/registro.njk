@@ -18,6 +18,44 @@
     letter-spacing: 3px;
     margin-bottom: 30px;
   }
+  /* Toggle password visibility */
+  .password-wrapper {
+    position: relative;
+  }
+  .password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--prado-gray);
+    padding: 0;
+    font-size: 1.1rem;
+  }
+  .password-toggle:hover { color: var(--prado-dark); }
+  /* Validation styles */
+  .prado-input.is-invalid { border-color: #dc3545; }
+  .prado-input.is-valid { border-color: #198754; }
+  .field-error {
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    display: none;
+  }
+  /* Password requirements */
+  .pwd-requirements {
+    font-size: 0.78rem;
+    color: var(--prado-gray);
+    margin-top: 6px;
+    display: none;
+  }
+  .pwd-requirements.visible { display: block; }
+  .pwd-req { margin-bottom: 2px; }
+  .pwd-req.met { color: #198754; }
+  .pwd-req.met i::before { content: "\f26b"; } /* bi-check-circle-fill */
+  .pwd-req.unmet { color: #dc3545; }
 </style>
 {% endblock %}
 
@@ -37,28 +75,144 @@
   </div>
   {% endif %}
 
-  <form action="/registro" method="POST">
+  <form action="/registro" method="POST" id="registro-form" novalidate>
     <div class="mb-3">
-      <input type="text" name="nombre" class="form-control prado-input"
-             placeholder="Nombre completo" required value="{{ nombre }}">
+      <label for="reg-nombre" class="form-label" style="font-size:0.85rem; letter-spacing:0.5px;">NOMBRE COMPLETO</label>
+      <input type="text" name="nombre" id="reg-nombre"
+             class="form-control prado-input"
+             placeholder="Ej: María García"
+             autocomplete="name"
+             required autofocus value="{{ nombre }}">
+      <div class="field-error" id="nombre-error">El nombre es obligatorio</div>
     </div>
     <div class="mb-3">
-      <input type="email" name="email" class="form-control prado-input"
-             placeholder="Correo electrónico" required value="{{ email }}">
+      <label for="reg-email" class="form-label" style="font-size:0.85rem; letter-spacing:0.5px;">CORREO ELECTRÓNICO</label>
+      <input type="email" name="email" id="reg-email"
+             class="form-control prado-input"
+             placeholder="tu@correo.com"
+             inputmode="email"
+             autocomplete="email"
+             required value="{{ email }}">
+      <div class="field-error" id="reg-email-error">Introduce un email válido</div>
     </div>
     <div class="mb-3">
-      <input type="password" name="password" class="form-control prado-input"
-             placeholder="Contraseña (mínimo 6 caracteres)" required minlength="6">
+      <label for="reg-password" class="form-label" style="font-size:0.85rem; letter-spacing:0.5px;">CONTRASEÑA</label>
+      <div class="password-wrapper">
+        <input type="password" name="password" id="reg-password"
+               class="form-control prado-input"
+               placeholder="Mínimo 6 caracteres"
+               autocomplete="new-password"
+               required minlength="6">
+        <button type="button" class="password-toggle" aria-label="Mostrar contraseña"
+                onclick="togglePassword('reg-password', this)">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+      <div class="pwd-requirements" id="pwd-reqs">
+        <div class="pwd-req" id="req-length"><i class="bi bi-circle"></i> Al menos 6 caracteres</div>
+        <div class="pwd-req" id="req-upper"><i class="bi bi-circle"></i> Al menos una mayúscula</div>
+        <div class="pwd-req" id="req-number"><i class="bi bi-circle"></i> Al menos un número</div>
+      </div>
+      <div class="field-error" id="pwd-error">La contraseña no cumple los requisitos</div>
     </div>
     <div class="mb-3">
-      <input type="password" name="password_confirm" class="form-control prado-input"
-             placeholder="Confirmar contraseña" required minlength="6">
+      <label for="reg-password-confirm" class="form-label" style="font-size:0.85rem; letter-spacing:0.5px;">CONFIRMAR CONTRASEÑA</label>
+      <div class="password-wrapper">
+        <input type="password" name="password_confirm" id="reg-password-confirm"
+               class="form-control prado-input"
+               placeholder="Repite la contraseña"
+               autocomplete="new-password"
+               required minlength="6">
+        <button type="button" class="password-toggle" aria-label="Mostrar contraseña"
+                onclick="togglePassword('reg-password-confirm', this)">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+      <div class="field-error" id="confirm-error">Las contraseñas no coinciden</div>
     </div>
-    <button type="submit" class="btn btn-prado w-100">Crear cuenta</button>
+    <button type="submit" class="btn btn-prado w-100">Crear mi cuenta</button>
   </form>
 
   <p class="text-center mt-3" style="font-size: 0.85rem;">
     ¿Ya tienes cuenta? <a href="/login" class="text-dark">Iniciar sesión</a>
   </p>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Toggle password visibility
+  function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId)
+    const icon = btn.querySelector('i')
+    if (input.type === 'password') {
+      input.type = 'text'
+      icon.classList.replace('bi-eye', 'bi-eye-slash')
+    } else {
+      input.type = 'password'
+      icon.classList.replace('bi-eye-slash', 'bi-eye')
+    }
+  }
+
+  const nombre = document.getElementById('reg-nombre')
+  const email = document.getElementById('reg-email')
+  const password = document.getElementById('reg-password')
+  const confirm = document.getElementById('reg-password-confirm')
+  const pwdReqs = document.getElementById('pwd-reqs')
+
+  // Show password requirements on focus
+  password.addEventListener('focus', () => pwdReqs.classList.add('visible'))
+
+  // Check requirements in real-time
+  password.addEventListener('input', function() {
+    const val = this.value
+    setReq('req-length', val.length >= 6)
+    setReq('req-upper', /[A-Z]/.test(val))
+    setReq('req-number', /[0-9]/.test(val))
+  })
+
+  function setReq(id, met) {
+    const el = document.getElementById(id)
+    const icon = el.querySelector('i')
+    if (met) {
+      el.classList.add('met')
+      el.classList.remove('unmet')
+      icon.className = 'bi bi-check-circle-fill'
+    } else {
+      el.classList.remove('met')
+      el.classList.add('unmet')
+      icon.className = 'bi bi-circle'
+    }
+  }
+
+  // Validate on blur
+  nombre.addEventListener('blur', function() {
+    validateField(this, 'nombre-error', this.value.trim().length > 0)
+  })
+
+  email.addEventListener('blur', function() {
+    if (this.value) validateField(this, 'reg-email-error', this.validity.valid)
+  })
+
+  password.addEventListener('blur', function() {
+    if (this.value) validateField(this, 'pwd-error', this.value.length >= 6)
+  })
+
+  confirm.addEventListener('blur', function() {
+    if (this.value) validateField(this, 'confirm-error', this.value === password.value)
+  })
+
+  function validateField(input, errorId, isValid) {
+    const errorEl = document.getElementById(errorId)
+    if (isValid) {
+      input.classList.remove('is-invalid')
+      input.classList.add('is-valid')
+      errorEl.style.display = 'none'
+    } else {
+      input.classList.add('is-invalid')
+      input.classList.remove('is-valid')
+      errorEl.style.display = 'block'
+    }
+  }
+</script>
 {% endblock %}

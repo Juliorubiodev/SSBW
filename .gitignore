@@ -20,5 +20,8 @@ Thumbs.db
 # Scraping artifacts
 cookies.txt
 
+# Frontend build output
+frontend/dist/
+
 # Enunciados del profesor
 Teoria/
