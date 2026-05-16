@@ -19,7 +19,7 @@ function Cuadros() {
         {isLoading ? (
           <span className="text-gray-400">Cargando...</span>
         ) : (
-          <img src={data?.imagen} alt={data?.titulo} className="w-full h-full object-contain p-2" />
+          <img src={`http://localhost:3000${data?.imagen}`} alt={data?.titulo} className="w-full h-full object-contain p-2" />
         )}
       </div>
       {data?.titulo && (

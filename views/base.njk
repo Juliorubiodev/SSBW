@@ -362,6 +362,10 @@
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-0">
+      <div id="offcanvas-cart-loading" class="text-center p-4" style="color:var(--prado-gray);">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <p class="mt-2 mb-0">Cargando cesta...</p>
+      </div>
       <div id="offcanvas-cart-items"></div>
       <div id="offcanvas-cart-empty" class="text-center p-4" style="color:var(--prado-gray); display:none;">
         <i class="bi bi-bag" style="font-size:2rem; opacity:0.5;"></i>
@@ -401,6 +405,7 @@
     const cartOffcanvas = document.getElementById('carritoOffcanvas')
     const cartItemsContainer = document.getElementById('offcanvas-cart-items')
     const cartEmpty = document.getElementById('offcanvas-cart-empty')
+    const cartLoading = document.getElementById('offcanvas-cart-loading')
     const cartFooter = document.getElementById('offcanvas-cart-footer')
     const cartTotal = document.getElementById('offcanvas-cart-total')
     const cartTemplate = document.getElementById('cart-item-template')
@@ -409,12 +414,20 @@
     cartOffcanvas.addEventListener('show.bs.offcanvas', loadCart)
 
     async function loadCart() {
+      cartLoading.style.display = 'block'
+      cartItemsContainer.innerHTML = ''
+      cartEmpty.style.display = 'none'
+      cartFooter.style.display = 'none'
       try {
-        const response = await fetch('/api/carrito')
+        const response = await fetch('/api/carrito', { credentials: 'same-origin' })
         const items = await response.json()
+        cartLoading.style.display = 'none'
         renderCart(items)
       } catch (error) {
         console.error('Error cargando carrito:', error)
+        cartLoading.style.display = 'none'
+        cartEmpty.style.display = 'block'
+        cartFooter.style.display = 'none'
       }
     }
 
