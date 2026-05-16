@@ -22,6 +22,8 @@ cookies.txt
 
 # Frontend build output
 frontend/dist/
+astro/dist/
+astro/.astro/
 
 # Enunciados del profesor
 Teoria/
