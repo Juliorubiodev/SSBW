@@ -1,0 +1,27 @@
+---
+interface Props {
+  título: string;
+  texto_precio: string;
+  imagen: string;
+}
+
+const { título, texto_precio, imagen } = Astro.props;
+const slug = imagen.replace(/\.[^.]+$/, '');
+const href = `/productos/${slug}`;
+---
+
+<a href={href} class="card bg-base-100 shadow-md hover:shadow-xl transition-shadow">
+  <figure class="bg-white p-4 h-64 flex items-center justify-center">
+    <img
+      src={`/imagenes/${imagen}`}
+      alt={título}
+      class="max-h-56 object-contain"
+    />
+  </figure>
+  <div class="card-body p-4">
+    <h2 class="card-title font-garamond italic text-base text-base-content line-clamp-2">
+      {título}
+    </h2>
+    <p class="text-base-content/70 font-semibold">{texto_precio}</p>
+  </div>
+</a>

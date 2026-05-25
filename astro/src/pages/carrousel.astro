@@ -1,14 +1,18 @@
 ---
-import Carrousel from '../components/Carrousel';
+import CarrouselSSG from '../components/CarrouselSSG';
 import Layout from '../layouts/Layout.astro';
+import productos from '../../data/productos.json';
+
+// Tomamos 20 productos para la galería SSG
+const items = productos.slice(0, 20);
 ---
 
-<Layout title="Carrousel - Tienda Prado">
+<Layout title="Galería - Tienda Prado">
   <h1 class="text-3xl font-bold text-center mb-2 font-garamond">
-    Carrousel de Imágenes
+    Galería de Imágenes
   </h1>
-  <p class="text-center text-gray-500 mb-8">
-    Reproducciones del Museo del Prado — Componente React (Astro Island)
+  <p class="text-center text-base-content/70 mb-8">
+    Componente React (Astro Island) — imágenes pasadas como <code>props</code> desde el frontmatter
   </p>
-  <Carrousel client:load />
+  <CarrouselSSG productos={items} client:load />
 </Layout>
