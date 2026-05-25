@@ -6,3 +6,13 @@
   --font-montserrat: "Montserrat", sans-serif;
   --font-garamond: "EB Garamond", serif;
 }
+
+/* Invertir el logo de Astro en modo oscuro para que sus letras negras se vean */
+@media (prefers-color-scheme: dark) {
+  .astro-logo {
+    filter: invert(1) brightness(1.1);
+  }
+}
+[data-theme="dark"] .astro-logo {
+  filter: invert(1) brightness(1.1);
+}

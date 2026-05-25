@@ -1,19 +1,29 @@
 ---
-import Layout from '../layouts/Layout.astro';
-// Página SSG - se completará en la Tarea 12
+import LayoutPrado from '../layouts/LayoutPrado.astro';
+import CardProducto from '../components/CardProducto.astro';
+import productos from '../../data/productos.json';
+
+const p = productos.slice(0, 12);
 ---
 
-<Layout title="SSG - Tienda Prado">
-  <div class="hero min-h-[60vh]">
-    <div class="hero-content text-center">
-      <div>
-        <h1 class="text-4xl font-bold font-garamond">Static Site Generation</h1>
-        <p class="text-gray-500 mt-4 max-w-md">
-          Esta página se completará en la Tarea 12 con contenidos de la tienda
-          generados estáticamente (SSG).
-        </p>
-        <div class="badge badge-outline mt-4">Próximamente — Tarea 12</div>
-      </div>
-    </div>
+<LayoutPrado title="Destacados - Tienda Prado">
+  <div class="flex flex-col gap-8 items-center">
+    <section>
+      <h1 class="font-garamond text-4xl text-base-content tracking-widest">Destacados</h1>
+    </section>
+    <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 gap-y-8 pt-4">
+      <CardProducto título={p[0].título} texto_precio={p[0].texto_precio} imagen={p[0].imagen} />
+      <CardProducto título={p[1].título} texto_precio={p[1].texto_precio} imagen={p[1].imagen} />
+      <CardProducto título={p[2].título} texto_precio={p[2].texto_precio} imagen={p[2].imagen} />
+      <CardProducto título={p[3].título} texto_precio={p[3].texto_precio} imagen={p[3].imagen} />
+      <CardProducto título={p[4].título} texto_precio={p[4].texto_precio} imagen={p[4].imagen} />
+      <CardProducto título={p[5].título} texto_precio={p[5].texto_precio} imagen={p[5].imagen} />
+      <CardProducto título={p[6].título} texto_precio={p[6].texto_precio} imagen={p[6].imagen} />
+      <CardProducto título={p[7].título} texto_precio={p[7].texto_precio} imagen={p[7].imagen} />
+      <CardProducto título={p[8].título} texto_precio={p[8].texto_precio} imagen={p[8].imagen} />
+      <CardProducto título={p[9].título} texto_precio={p[9].texto_precio} imagen={p[9].imagen} />
+      <CardProducto título={p[10].título} texto_precio={p[10].texto_precio} imagen={p[10].imagen} />
+      <CardProducto título={p[11].título} texto_precio={p[11].texto_precio} imagen={p[11].imagen} />
+    </section>
   </div>
-</Layout>
+</LayoutPrado>

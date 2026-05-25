@@ -1,0 +1,53 @@
+---
+import LayoutPrado from '../../layouts/LayoutPrado.astro';
+import productos from '../../../data/productos.json';
+
+export async function getStaticPaths() {
+  // slug = nombre de imagen sin extensión (ya viene URL-safe del scraping)
+  // Dedupe: si dos productos comparten imagen, nos quedamos con el primero
+  const seen = new Set<string>();
+  const paths = [];
+  for (const pr of productos) {
+    const slug = pr.imagen.replace(/\.[^.]+$/, '');
+    if (seen.has(slug)) continue;
+    seen.add(slug);
+    paths.push({
+      params: { slug },
+      props: { producto: pr }
+    });
+  }
+  return paths;
+}
+
+const { producto } = Astro.props;
+---
+
+<LayoutPrado title={producto.título}>
+  <div class="max-w-5xl mx-auto">
+    <a href="/ssg" class="btn btn-ghost btn-sm mb-4">← Volver a Destacados</a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start bg-base-100 p-6 rounded-2xl shadow-md">
+      <div class="flex justify-center bg-white p-6 rounded-xl">
+        <img
+          src={`/imagenes/${producto.imagen}`}
+          alt={producto.título}
+          class="max-h-[500px] object-contain"
+        />
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <h1 class="font-garamond text-3xl text-base-content tracking-wide">
+          {producto.título}
+        </h1>
+        <p class="text-2xl font-semibold text-primary">{producto.texto_precio}</p>
+        <div class="divider my-1"></div>
+        <p class="text-base-content/80 whitespace-pre-line leading-relaxed">
+          {producto.descripción}
+        </p>
+        <div class="mt-4">
+          <button class="btn btn-primary">Añadir al carrito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</LayoutPrado>

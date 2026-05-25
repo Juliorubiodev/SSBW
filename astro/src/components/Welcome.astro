@@ -4,22 +4,22 @@ import astroLogo from '../assets/astro.svg';
 
 <div class="hero min-h-[70vh]">
   <div class="hero-content text-center flex-col items-center">
-    <img src={astroLogo.src} width="120" height="50" alt="Astro" class="mb-4" />
+    <img src={astroLogo.src} width="120" height="50" alt="Astro" class="mb-4 astro-logo" />
     <h1 class="text-5xl font-bold font-garamond">Tienda Prado</h1>
-    <p class="text-lg text-gray-500 max-w-md mt-2">
+    <p class="text-lg text-base-content/70 max-w-md mt-2">
       Galería de arte y reproducciones del Museo del Prado.
       Sitio construido con <strong>Astro</strong> + <strong>React Islands</strong> + <strong>Tailwind</strong> + <strong>DaisyUI</strong>.
     </p>
 
     <!-- Tabs funcionales con radio inputs (sin JS) -->
     <div class="w-full flex flex-col items-center mt-8">
-      <div role="tablist" class="tabs tabs-boxed">
+      <div role="tablist" class="tabs tabs-boxed place-content-center w-full">
         <input type="radio" name="info_tabs" role="tab" class="tab" aria-label="Astro Islands" checked />
         <div role="tabpanel" class="tab-content p-4">
           <div class="card bg-base-100 shadow-md mt-4 max-w-lg mx-auto text-left">
             <div class="card-body">
               <h2 class="card-title font-garamond">¿Qué son las Astro Islands?</h2>
-              <p class="text-sm text-gray-500">
+              <p class="text-sm text-base-content/70">
                 Astro Islands es un patrón de arquitectura web donde los componentes interactivos
                 se cargan de forma independiente en una página mayoritariamente estática.
                 Esto permite enviar el mínimo JavaScript al navegador.
@@ -36,7 +36,7 @@ import astroLogo from '../assets/astro.svg';
           <div class="card bg-base-100 shadow-md mt-4 max-w-lg mx-auto text-left">
             <div class="card-body">
               <h2 class="card-title font-garamond">Static Site Generation</h2>
-              <p class="text-sm text-gray-500">
+              <p class="text-sm text-base-content/70">
                 Astro genera HTML estático en tiempo de compilación. Las páginas se sirven
                 directamente sin necesidad de servidor, lo que mejora la velocidad de carga
                 y el SEO.
@@ -53,7 +53,7 @@ import astroLogo from '../assets/astro.svg';
           <div class="card bg-base-100 shadow-md mt-4 max-w-lg mx-auto text-left">
             <div class="card-body">
               <h2 class="card-title font-garamond">React en Astro</h2>
-              <p class="text-sm text-gray-500">
+              <p class="text-sm text-base-content/70">
                 Astro permite usar componentes React como islas interactivas con la directiva
                 <code>client:load</code>. Solo los componentes que lo necesitan cargan JavaScript,
                 manteniendo el resto de la página estática.
