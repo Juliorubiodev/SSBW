@@ -1,0 +1,27 @@
+# Dependencias (se reinstalan dentro del contenedor con npm ci)
+node_modules
+generated
+
+# Otras apps que NO se despliegan en este contenedor (Express)
+frontend
+astro
+
+# Entorno y secretos
+.env
+.env.*
+
+# Logs y artefactos
+logs
+*.log
+cookies.txt
+
+# Control de versiones y enunciados
+.git
+.gitignore
+Teoria
+README.md
+
+# Editor / SO
+.claude
+.DS_Store
+Thumbs.db

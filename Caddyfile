@@ -1,0 +1,22 @@
+# Configuración del proxy inverso Caddy.
+#
+# En desarrollo / VPS sin dominio: escucha en el puerto 80 y redirige a la app.
+:80 {
+	reverse_proxy tienda-prado:3000
+
+	log {
+		output stdout
+	}
+}
+
+# --- Despliegue con dominio real ---
+# Sustituye el bloque ":80" anterior por tu dominio y Caddy gestionará
+# automáticamente los certificados SSL (Let's Encrypt), el puerto 443
+# y la redirección de HTTP a HTTPS:
+#
+# tienda.midominio.com {
+# 	reverse_proxy tienda-prado:3000
+# 	log {
+# 		output stdout
+# 	}
+# }
