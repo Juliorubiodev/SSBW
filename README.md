@@ -2,6 +2,14 @@
 
 Réplica de la tienda online del Museo del Prado desarrollada para la asignatura **Sistemas Software Basados en Web** (UGR).
 
+## 🌐 Aplicación desplegada
+
+La tienda está desplegada y accesible públicamente en:
+
+### 👉 http://165.227.159.247
+
+> Desplegada en un **VPS (Ubuntu 24.04)** mediante **Docker Compose**, con **Caddy** como proxy inverso en el puerto 80. Ver la sección [Despliegue en producción](#despliegue-en-producción-tarea-13) para más detalles.
+
 ## Tecnologías
 
 - **Node.js v24** con TypeScript (soporte nativo, sin compilación)
@@ -81,6 +89,27 @@ npm run dev
 
 La aplicación estará disponible en `http://localhost:3000`.
 
+## Despliegue en producción (Tarea 13)
+
+La aplicación se despliega como **IaaS** en un único VPS mediante `docker compose`, sin servicios gestionados externos. Esto da control total sobre el despliegue y permite usar cualquier proveedor de VPS o CaaS.
+
+- **Dónde:** VPS Ubuntu 24.04 (DigitalOcean)
+- **URL pública:** http://165.227.159.247
+- **Orquestación:** `docker-compose-prod.yml` con tres servicios:
+  - **`db`** — PostgreSQL 16 (con healthcheck y volumen persistente)
+  - **`tienda-prado`** — la aplicación Express, construida con el `Dockerfile`
+  - **`caddy`** — proxy inverso/servidor web (HTTPS, caché, compresión) expuesto en el puerto 80
+
+El servicio de la aplicación aplica las migraciones de Prisma y carga los productos automáticamente al arrancar.
+
+```bash
+# En el VPS (con Docker ya instalado y el repositorio clonado)
+cp .env.prod.example .env          # configurar variables de entorno
+docker compose -f docker-compose-prod.yml up --build -d
+```
+
+> Con un nombre de dominio en lugar de la IP, Caddy gestiona automáticamente los certificados SSL (Let's Encrypt), el puerto 443 y la redirección HTTP → HTTPS.
+
 ## Usuarios de prueba
 
 | Email | Contraseña | Rol |
@@ -94,5 +123,6 @@ La aplicación estará disponible en `http://localhost:3000`.
 | Rama | Contenido |
 |------|-----------|
 | `main` | Código actualizado |
-| `entrega-1` | Tareas 1–6 |
-| `entrega-2` | Tarea 7 (API RESTful) |
+| `entrega-1` | Tareas 1–7 (setup, scraping, BD, MVC, carrito, auth, API REST) |
+| `entrega-2` | Tareas 8–9 (mejoras UX, carrito offcanvas, SPA React) |
+| `entrega-3` | Tareas 10–13 (React Router, Astro SSG, despliegue en VPS) |
